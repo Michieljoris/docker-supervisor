@@ -1,0 +1,45 @@
+#+TITLE: supervisor
+
+Base image, copied from Quinten Krijger's [[https://github.com/Krijger/docker-cookbooks/tree/master/supervisor][supervisor]].
+
+You can use this image to build new images that start a supervisor process by
+default, that is then able to start any other process. This way you can start
+processes that deamonize themselves without the container dying.
+
+Build image:
+
+: docker build -t michieljoris/supervisor .
+
+This image and images based on it start the supervisor process, no matter what.
+
+Test the image build with this Dockerfile:
+
+: docker run --name supervisor michieljoris/supervisor
+
+It should keep running and not die since it starts the supervisor deamon as
+only process.
+
+Build new images based on this image by starting your new Docker file with:
+
+: FROM michieljoris/supervisor
+
+To start your app and keep it running create a file, name for example
+=appname=, with the following content:
+: [program:appname]
+: command=/command/to/start/app parm1 parm2
+
+Finish writing your Docker file and then end it with:
+: COPY appname.conf /etc/supervisor/conf.d/appname.conf
+
+The supervisor process will pick this up and execute the command in =appname.conf=.
+
+Build your new image in the directory with your new Dockerfile:
+: docker build -t imagename
+
+Then run your app: 
+
+: docker run -d --name appname imagename
+
+This will start the app. If it is a deamonized app the docker container won't
+die, the supervisor process will keep the container alive.
+
